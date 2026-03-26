@@ -58,4 +58,3 @@ whoami /groups | find "TrustedInstaller"
 
 ## 参考
 - [NtObjectManager 官方文档](https://github.com/googleprojectzero/sandbox-attacksurface-analysis-tools/tree/main/NtObjectManager)
-- [TrustedInstaller 服务简介](https://docs.microsoft.com/en-us/windows/win32/services/trustedinstaller)
