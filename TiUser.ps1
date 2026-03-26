@@ -3,7 +3,7 @@
     借 TrustedInstaller 的壳，弹个 TI 权限的 CMD 窗口。
 .DESCRIPTION
     这脚本通过 NtObjectManager 模块把 TrustedInstaller.exe 的令牌“借”过来，
-    然后用它生成一个新的 cmd.exe 进程，这样新窗口就有 TrustedInstaller 身份（基本等于 SYSTEM）。
+    然后用它生成一个新的 cmd.exe 进程，这样新窗口就有 TrustedInstaller 身份。
     纯 PowerShell 官方模块实现，不依赖第三方工具。
 .NOTES
     需要以管理员身份运行。
