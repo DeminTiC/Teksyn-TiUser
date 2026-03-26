@@ -1,0 +1,2 @@
+# Teksyn-TiUser
+使用纯PowerShell脚本实现TrustedInstaller权限
