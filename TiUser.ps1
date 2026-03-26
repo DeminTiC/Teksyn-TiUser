@@ -1,7 +1,7 @@
 ```powershell
 <#
 .SYNOPSIS
-    借 TrustedInstaller 的壳，弹个 SYSTEM 权限的 CMD 窗口。
+    借 TrustedInstaller 的壳，弹个 TI 权限的 CMD 窗口。
 .DESCRIPTION
     这脚本通过 NtObjectManager 模块把 TrustedInstaller.exe 的令牌“借”过来，
     然后用它生成一个新的 cmd.exe 进程，这样新窗口就有 TrustedInstaller 身份（基本等于 SYSTEM）。
@@ -15,13 +15,13 @@
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "[*] 检查环境，准备干活..." -ForegroundColor Cyan
+Write-Host "[*] 检查环境..." -ForegroundColor Cyan
 
 # 1. 临时放宽执行策略（仅当前用户）
 try {
     $currentPolicy = Get-ExecutionPolicy -Scope CurrentUser
     if ($currentPolicy -notin @("Unrestricted", "Bypass", "RemoteSigned")) {
-        Write-Host "[*] 当前执行策略是 $currentPolicy，先临时改成 Unrestricted 方便加载模块" -ForegroundColor Yellow
+        Write-Host "[*] 当前执行策略是 $currentPolicy，临时改成 Unrestricted 方便加载模块" -ForegroundColor Yellow
         Set-ExecutionPolicy Unrestricted -Scope CurrentUser -Force
     }
 }
@@ -36,12 +36,12 @@ if (-not (Get-Module -ListAvailable -Name NtObjectManager)) {
         Install-Module -Name NtObjectManager -Force -Scope CurrentUser -AllowClobber
     }
     catch {
-        Write-Error "装模块失败了：$_"
+        Write-Error "安装模块失败：$_"
         exit 1
     }
 }
 else {
-    Write-Host "[+] NtObjectManager 模块已经在机器上了。" -ForegroundColor Green
+    Write-Host "[+] NtObjectManager 模块已经存在。" -ForegroundColor Green
 }
 
 # 3. 导入模块
@@ -50,7 +50,7 @@ try {
     Write-Host "[+] 模块导入成功。" -ForegroundColor Green
 }
 catch {
-    Write-Error "导入模块时出岔子：$_"
+    Write-Error "导入模块时出问题：$_"
     exit 1
 }
 
@@ -79,7 +79,7 @@ try {
     Write-Host "[+] 已启用 SeDebugPrivilege 权限，可以摸其他进程了。" -ForegroundColor Green
 }
 catch {
-    Write-Error "权限开不了，确定是以管理员身份运行的吗？：$_"
+    Write-Error "确定是以管理员身份运行的吗？：$_"
     exit 1
 }
 
@@ -103,6 +103,6 @@ catch {
     exit 1
 }
 
-Write-Host "[*] 完事儿，按任意键退出..."
+Write-Host "[*] 按任意键退出..."
 Read-Host
 ```
