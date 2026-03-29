@@ -14,7 +14,7 @@
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "[*] 检查环境，准备干活..." -ForegroundColor Cyan
+Write-Host "[*] 检查环境，准备执行命令..." -ForegroundColor Cyan
 
 # 1. 临时放宽执行策略（仅当前用户）
 try {
@@ -25,7 +25,7 @@ try {
     }
 }
 catch {
-    Write-Warning "执行策略改不了，后面加载模块可能会挂：$_"
+    Write-Warning "执行策略无法修改，加载模块可能会失败：$_"
 }
 
 # 2. 检查 NtObjectManager 模块，没有就装上
@@ -35,12 +35,12 @@ if (-not (Get-Module -ListAvailable -Name NtObjectManager)) {
         Install-Module -Name NtObjectManager -Force -Scope CurrentUser -AllowClobber
     }
     catch {
-        Write-Error "装模块失败了：$_"
+        Write-Error "安装模块失败：$_"
         exit 1
     }
 }
 else {
-    Write-Host "[+] NtObjectManager 模块已经在机器上了。" -ForegroundColor Green
+    Write-Host "[+] NtObjectManager 模块已经安装。" -ForegroundColor Green
 }
 
 # 3. 导入模块
@@ -49,7 +49,7 @@ try {
     Write-Host "[+] 模块导入成功。" -ForegroundColor Green
 }
 catch {
-    Write-Error "导入模块时出岔子：$_"
+    Write-Error "导入模块时出问题：$_"
     exit 1
 }
 
@@ -75,25 +75,24 @@ else {
 # 5. 给自己开调试权限（SeDebugPrivilege）
 try {
     Enable-NtTokenPrivilege SeDebugPrivilege
-    Write-Host "[+] 已启用 SeDebugPrivilege 权限，可以摸其他进程了。" -ForegroundColor Green
+    Write-Host "[+] 已启用 SeDebugPrivilege 权限，可以转向其他进程了。" -ForegroundColor Green
 }
 catch {
-    Write-Error "权限开不了，确定是以管理员身份运行的吗？：$_"
+    Write-Error "权限问题，确定是以管理员身份运行的吗？：$_"
     exit 1
 }
 
 # 6. 找到 TrustedInstaller.exe 的进程对象
 $tiProcess = Get-NtProcess -Name TrustedInstaller.exe -First 1
 if (-not $tiProcess) {
-    Write-Error "找不到 TrustedInstaller.exe 进程，服务可能没正常启动。"
+    Write-Error "找不到 TrustedInstaller.exe 进程，服务可能未正常启动。"
     exit 1
 }
 Write-Host "[+] 抓到 TrustedInstaller 进程了，PID 是 $($tiProcess.ProcessId)。" -ForegroundColor Green
 
-# 7. 借它的令牌生一个子进程（CMD 窗口）——位置参数版本
+# 7. 借它的令牌生一个子进程（CMD 窗口
 Write-Host "[*] 正在用 TrustedInstaller 的身份开新 CMD 窗口..." -ForegroundColor Cyan
 try {
-    # 注意：旧版模块使用位置参数，cmd.exe 直接跟在命令后面，不需要 -Path 或 -FilePath
     $proc = New-Win32Process cmd.exe -CreationFlags NewConsole -ParentProcess $tiProcess
     Write-Host "[+] 新窗口已经弹出来了，进程 ID：$($proc.ProcessId)" -ForegroundColor Green
     Write-Host "[*] 验证权限：在新窗口里运行 whoami /groups | find ""TrustedInstaller""" -ForegroundColor Cyan
@@ -103,5 +102,5 @@ catch {
     exit 1
 }
 
-Write-Host "[*] 完事儿，按任意键退出..."
+Write-Host "[*] 按任意键退出..."
 Read-Host
